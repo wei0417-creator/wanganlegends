@@ -194,6 +194,52 @@
             color: var(--text-light);
         }
 
+        /* 🎵 音樂播放控制器 */
+        .audio-controller {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            z-index: 1000;
+            background: rgba(11, 30, 46, 0.95);
+            padding: 10px 20px;
+            border-radius: 50px;
+            border: 1px solid rgba(57, 255, 20, 0.4);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+        }
+
+        .audio-controller.playing {
+            border-color: var(--primary-glow);
+            box-shadow: 0 0 15px rgba(57, 255, 20, 0.3);
+        }
+
+        .music-btn {
+            background: transparent;
+            border: none;
+            color: var(--primary-glow);
+            font-size: 1.2rem;
+            cursor: pointer;
+            outline: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s ease;
+        }
+
+        .music-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .music-text {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            letter-spacing: 0.05rem;
+        }
+
         footer {
             text-align: center;
             padding: 3rem 1rem;
@@ -236,6 +282,18 @@
         </section>
     </main>
 
+    <!-- 🎵 專屬背景音樂播放控制器 -->
+    <div class="audio-controller" id="music-controller">
+        <button class="music-btn" id="music-trigger-btn" onclick="toggleMusic()">
+            <span id="music-icon">▶</span>
+        </button>
+        <span class="music-text" id="music-status-text">聽深夜低語</span>
+        <audio id="bg-music" loop>
+            <source src="wangan-suno.mp3" type="audio/mpeg">
+            您的瀏覽器不支援此音訊播放。
+        </audio>
+    </div>
+
     <footer>
         <p>© 2026 望安傳奇專題網站 · 故事採集：陳朝虹 · 出版單位：離島出版</p>
     </footer>
@@ -244,7 +302,7 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
     <script>
-        // 1. 故事資料庫（這裡先放置 4 則經典代表，未來可透過 API 動態讀取 Google 試算表）
+        // 1. 故事資料庫
         const stories = [
             {
                 title: "布袋港推牛車的竹竿鬼",
@@ -326,6 +384,26 @@
                 .addTo(map)
                 .bindPopup(popupContent);
         });
+
+        // 5. 背景音樂播放邏輯
+        function toggleMusic() {
+            const audio = document.getElementById('bg-music');
+            const icon = document.getElementById('music-icon');
+            const text = document.getElementById('music-status-text');
+            const controller = document.getElementById('music-controller');
+
+            if (audio.paused) {
+                audio.play();
+                icon.textContent = "⏸";
+                text.textContent = "播放中...";
+                controller.classList.add('playing');
+            } else {
+                audio.pause();
+                icon.textContent = "▶";
+                text.textContent = "聽深夜低語";
+                controller.classList.remove('playing');
+            }
+        }
     </script>
 </body>
 </html>
