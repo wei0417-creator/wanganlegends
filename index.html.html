@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>望安傳奇：深夜的常民怪談與島嶼記憶</title>
+    
+    <!-- Leaflet 地圖 CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        /* CSS 變數：打造暗黑與螢光綠的神祕氛圍 */
+        :root {
+            --bg-dark: #070f19;      /* 深夜海藍黑 */
+            --panel-bg: #111e2e;     /* 面板深藍 */
+            --text-light: #e2e8f0;   /* 硓𥑮石灰白 */
+            --text-muted: #94a3b8;   /* 陰暗灰 */
+            --primary-glow: #39ff14; /* 靈異螢光綠 */
+            --accent-gold: #eab308;  /* 溫暖常民金 */
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Microsoft JhengHei", sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: var(--font-family);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* 頂部 Hero 區域 */
+        header {
+            text-align: center;
+            padding: 5rem 1rem 3rem 1rem;
+            position: relative;
+            background: linear-gradient(180deg, rgba(7, 15, 25, 0.5) 0%, var(--bg-dark) 100%);
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            letter-spacing: 0.3rem;
+            color: var(--text-light);
+            text-shadow: 0 0 15px rgba(57, 255, 20, 0.4);
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            letter-spacing: 0.1rem;
+            margin-bottom: 2rem;
+        }
+
+        /* 核心內容區 */
+        main {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 1.5rem 5rem 1.5rem;
+        }
+
+        /* 1. 隨機抽故事區塊 */
+        .story-generator {
+            background-color: var(--panel-bg);
+            border: 1px solid rgba(57, 255, 20, 0.2);
+            border-radius: 12px;
+            padding: 2.5rem;
+            margin-bottom: 3rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .story-generator:hover {
+            border-color: rgba(57, 255, 20, 0.5);
+            box-shadow: 0 8px 32px rgba(57, 255, 20, 0.1);
+        }
+
+        .story-tag {
+            display: inline-block;
+            background: rgba(57, 255, 20, 0.1);
+            color: var(--primary-glow);
+            padding: 0.2rem 0.8rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(57, 255, 20, 0.3);
+        }
+
+        .story-title {
+            font-size: 1.6rem;
+            color: var(--accent-gold);
+            margin-bottom: 1rem;
+            min-height: 2.5rem;
+        }
+
+        .story-content {
+            color: var(--text-light);
+            font-size: 1.05rem;
+            min-height: 6rem;
+            margin-bottom: 1.5rem;
+            text-align: left;
+            white-space: pre-line;
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--primary-glow);
+            border: 2px solid var(--primary-glow);
+            padding: 0.8rem 1.8rem;
+            font-size: 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s ease;
+            letter-spacing: 0.1rem;
+        }
+
+        .btn-ghost:hover {
+            background: var(--primary-glow);
+            color: var(--bg-dark);
+            box-shadow: 0 0 15px var(--primary-glow);
+        }
+
+        /* 2. 互動地圖區塊 */
+        .map-section {
+            margin-bottom: 3rem;
+        }
+
+        .section-title {
+            font-size: 1.6rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+            border-left: 4px solid var(--primary-glow);
+            padding-left: 0.8rem;
+        }
+
+        #map {
+            height: 480px;
+            width: 100%;
+            border-radius: 12px;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        }
+
+        /* 3. 書籍介紹與理念 */
+        .book-intro {
+            background: rgba(17, 30, 46, 0.6);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-top: 3rem;
+            border-left: 4px solid var(--accent-gold);
+        }
+
+        .book-intro h3 {
+            color: var(--accent-gold);
+            margin-bottom: 1rem;
+        }
+
+        .book-intro p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+        }
+
+        /* 地圖彈出視窗（Popup）客製化樣式 */
+        .leaflet-popup-content-wrapper {
+            background: var(--panel-bg) !important;
+            color: var(--text-light) !important;
+            border: 1px solid rgba(57, 255, 20, 0.3);
+            border-radius: 8px !important;
+        }
+        
+        .leaflet-popup-tip {
+            background: var(--panel-bg) !important;
+        }
+
+        .popup-title {
+            color: var(--accent-gold);
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 0.4rem;
+        }
+
+        .popup-text {
+            font-size: 0.9rem;
+            line-height: 1.4;
+            color: var(--text-light);
+        }
+
+        footer {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            border-top: 1px solid rgba(148, 163, 184, 0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>望安傳奇</h1>
+        <p class="subtitle">—— 澎湖望安島的深夜常民怪談與集體記憶 ——</p>
+    </header>
+
+    <main>
+        <!-- 隨機怪談生成器 -->
+        <section class="story-generator">
+            <span class="story-tag" id="story-location">讀取中...</span>
+            <h2 class="story-title" id="story-title">點擊下方按鈕，傾聽島嶼低語</h2>
+            <div class="story-content" id="story-content">
+                「在全澎湖人口密度最低、鬼怪傳說密度最高的望安島上，
+                那些幽冥與人間重疊的邊界，正等著你來探尋...」
+            </div>
+            <button class="btn-ghost" onclick="getRandomStory()">深夜聽故事</button>
+        </section>
+
+        <!-- 互動地圖 -->
+        <section class="map-section">
+            <h2 class="section-title">望安島幽冥地圖</h2>
+            <div id="map"></div>
+        </section>
+
+        <!-- 書籍背景資訊 -->
+        <section class="book-intro">
+            <h3>關於《望安傳奇：在地採集實錄》</h3>
+            <p>本書由離島出版發行，陳朝虹大哥歷時多年深入澎湖望安島各聚落，口傳採集高達 202 則在地村民口耳相傳的民俗怪談、幽冥遭遇與風土傳說，並由羅宜凡老師繪製生動插畫。</p>
+            <p>這些故事並不全是為了嚇人，更多的是融合了離島居民在孤立環境中，與大自然、海洋和未知的敬畏與幽默共處之道。這是屬於望安最真實、最生動的口傳文學紀錄。</p>
+        </section>
+    </main>
+
+    <footer>
+        <p>© 2026 望安傳奇專題網站 · 故事採集：陳朝虹 · 出版單位：離島出版</p>
+    </footer>
+
+    <!-- Leaflet 地圖 JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script>
+        // 1. 故事資料庫（這裡先放置 4 則經典代表，未來可透過 API 動態讀取 Google 試算表）
+        const stories = [
+            {
+                title: "布袋港推牛車的竹竿鬼",
+                location: "布袋港",
+                lat: 23.3642,
+                lng: 119.5048,
+                content: "深夜的布袋港畔，常有老一輩村民在趕牛車回家的路上，赫然看見路邊躺著一根巨大的長竹竿。當你試圖跨過去時，竹竿卻會突然「長高」把你攔住。老人家說：遇到這種竹竿鬼，千萬別慌，往竹竿吐口唾沫或繞道而行，它便會摸摸鼻子消失在夜色中。"
+            },
+            {
+                title: "潭門港的深夜攔路客",
+                location: "潭門港",
+                lat: 23.3615,
+                lng: 119.5015,
+                content: "潭門港是進出望安的門戶。傳說在某個沒有月光的深夜，一位剛喝完酒準備回家的村民，在港口路邊遇到一位穿著古裝的婦人招手攔車。村民好心載她一程，結果騎到一半回頭一看，後座空空如也，只留下一陣淡淡的海草味與濕漉漉的座椅痕跡。"
+            },
+            {
+                title: "鴛鴦窟的防空洞腳步聲",
+                location: "鴛鴦窟",
+                lat: 23.3775,
+                lng: 119.5065,
+                content: "日治時期留下來的鴛鴦窟防空洞遺址，四周荒草叢生。相傳黃昏時分如果獨自一人走進洞窟深處，明明四周空無一人，卻會清楚聽到沉重的日軍軍靴踏步聲在石壁間迴盪。當地人告誡，太陽下山後，沒事別在鴛鴦窟附近逗留。"
+            },
+            {
+                title: "網垵口沙灘的無人幽靈船",
+                location: "網垵口沙灘",
+                lat: 23.3562,
+                lng: 119.5038,
+                content: "網垵口是美麗的弧形沙灘。但在清晨霧氣未散時，曾有討海人目擊一艘破舊的古老帆船緩緩駛向沙灘。船上桅杆殘破，卻不見任何船員。當岸上的人大聲呼喊時，整艘船瞬間在晨霧中蒸發。老一輩說，那是早期遭遇海難的先人，乘著幽靈船回鄉探望。"
+            }
+        ];
+
+        // 2. 隨機故事生成功能
+        function getRandomStory() {
+            const randomIndex = Math.floor(Math.random() * stories.length);
+            const story = stories[randomIndex];
+            
+            const tagEl = document.getElementById('story-location');
+            const titleEl = document.getElementById('story-title');
+            const contentEl = document.getElementById('story-content');
+            
+            // 加入淡出動畫效果
+            contentEl.style.opacity = 0;
+            titleEl.style.opacity = 0;
+            
+            setTimeout(() => {
+                tagEl.textContent = `📍 發生地點：${story.location}`;
+                titleEl.textContent = story.title;
+                contentEl.textContent = story.content;
+                
+                // 動態飛往該故事的地圖點位
+                map.flyTo([story.lat, story.lng], 15, {
+                    animate: true,
+                    duration: 1.5
+                });
+                
+                contentEl.style.opacity = 1;
+                titleEl.style.opacity = 1;
+            }, 300);
+        }
+
+        // 3. 初始化互動地圖 (中心點設在望安島)
+        const map = L.map('map', {
+            scrollWheelZoom: false // 避免滾動頁面時誤觸放大縮小
+        }).setView([23.368, 119.505], 14);
+
+        // 使用 CartoDB Dark Matter 免費深色地圖樣式，極度契合怪談氛圍
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '© OpenStreetMap contributors, © CARTO'
+        }).addTo(map);
+
+        // 4. 將故事點位動態渲染到地圖上
+        stories.forEach(story => {
+            const popupContent = `
+                <div class="popup-title">📍 ${story.title}</div>
+                <div class="popup-text">${story.content.substring(0, 60)}...</div>
+            `;
+
+            L.marker([story.lat, story.lng])
+                .addTo(map)
+                .bindPopup(popupContent);
+        });
+    </script>
+</body>
+</html>
